@@ -52,8 +52,8 @@ function sumMiddleNumbers(arrays: number[][]): number {
     .reduce((acc, curr) => acc + curr, 0);
 }
 
-const inCorrect = updates.filter((u) => !isInCorrectOrder(u));
-const correctOrder = inCorrect.map((u) => toCorrectOrder(u));
-const sum = sumMiddleNumbers(correctOrder);
+const inCorrects = updates.filter((u) => !isInCorrectOrder(u));
+const correctOrders = inCorrects.map((u) => toCorrectOrder(u));
+const sum = sumMiddleNumbers(correctOrders);
 console.log({ sum });
 export {};
