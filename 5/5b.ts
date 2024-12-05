@@ -25,18 +25,18 @@ function isInCorrectOrder(update: number[]) {
 }
 
 function toCorrectOrder(update: number[]): number[] {
-  var rulesFiltered = rules.filter((rule) => {
-    return update.includes(rule.lower) && update.includes(rule.higher);
-  });
   var correctOrder: number[] = [];
   var foundAll = false;
+
   while (!foundAll) {
-    var first = update.find((u) => !rulesFiltered.some((r) => r.higher === u));
-    correctOrder.push(first);
-    update = update.filter((u) => u !== first);
     var rulesFiltered = rules.filter((rule) => {
       return update.includes(rule.lower) && update.includes(rule.higher);
     });
+    var lowestValue = update.find(
+      (u) => !rulesFiltered.some((r) => r.higher === u)
+    );
+    correctOrder.push(lowestValue);
+    update = update.filter((u) => u !== lowestValue);
 
     if (update.length === 1) {
       correctOrder.push(update[0]);
