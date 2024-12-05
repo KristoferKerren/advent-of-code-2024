@@ -16,11 +16,17 @@ data.split(/\r?\n/).forEach((row) => {
   }
 });
 
+function getRelevantRules(update: number[]): Rule[] {
+  return [...rules].filter((rule) => {
+    return update.includes(rule.lower) && update.includes(rule.higher);
+  });
+}
+
 function isInCorrectOrder(update: number[]) {
-  return rules.every((rule) => {
+  return getRelevantRules(update).every((rule) => {
     const firstInd = update.indexOf(rule.lower);
     const secondeInd = update.indexOf(rule.higher);
-    return firstInd < 0 || secondeInd < 0 || firstInd < secondeInd;
+    return firstInd < secondeInd;
   });
 }
 
@@ -29,9 +35,7 @@ function toCorrectOrder(update: number[]): number[] {
   var foundAll = false;
 
   while (!foundAll) {
-    var rulesFiltered = rules.filter((rule) => {
-      return update.includes(rule.lower) && update.includes(rule.higher);
-    });
+    var rulesFiltered = getRelevantRules(update);
     var lowestValue = update.find(
       (u) => !rulesFiltered.some((r) => r.higher === u)
     );

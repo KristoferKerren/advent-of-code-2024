@@ -16,11 +16,17 @@ data.split(/\r?\n/).forEach((row) => {
   }
 });
 
+function getRelevantRules(update: number[]): Rule[] {
+  return [...rules].filter((rule) => {
+    return update.includes(rule.lower) && update.includes(rule.higher);
+  });
+}
+
 function isInCorrectOrder(update: number[]) {
-  return rules.every((rule) => {
+  return getRelevantRules(update).every((rule) => {
     const firstInd = update.indexOf(rule.lower);
     const secondeInd = update.indexOf(rule.higher);
-    return firstInd < 0 || secondeInd < 0 || firstInd < secondeInd;
+    return firstInd < secondeInd;
   });
 }
 
@@ -30,7 +36,7 @@ function sumMiddleNumbers(arrays: number[][]): number {
     .reduce((acc, curr) => acc + curr, 0);
 }
 
-const inCorrect = updates.filter((u) => isInCorrectOrder(u));
-const sum = sumMiddleNumbers(inCorrect);
+const corrects = updates.filter((u) => !isInCorrectOrder(u));
+const sum = sumMiddleNumbers(corrects);
 console.log({ sum });
 export {};
