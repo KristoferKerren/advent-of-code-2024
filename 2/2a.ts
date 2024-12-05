@@ -1,7 +1,7 @@
 const fs = require('fs');
 
 // Read the file synchronously
-const data = fs.readFileSync('2/2-input.txt', 'utf8');
+const data = fs.readFileSync('2/2a-input.txt', 'utf8');
 
 const isSafe = (row: string) => {
   const nbrs = row.split(' ').map((nbr) => Number(nbr));

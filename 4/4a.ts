@@ -35,9 +35,9 @@ const isXMASDia = (startX, startY) => {
     startY + 1
   )}${getVal(startX + 2, startY + 2)}${getVal(startX + 3, startY + 3)}`;
   const word2 = `${getVal(startX, startY)}${getVal(
-    startX - 1,
-    startY + 1
-  )}${getVal(startX - 2, startY + 2)}${getVal(startX - 3, startY + 3)}`;
+    startX + 1,
+    startY - 1
+  )}${getVal(startX + 2, startY - 2)}${getVal(startX + 3, startY - 3)}`;
   if (
     (word1 === 'XMAS' || word1 === 'SAMX') &&
     (word2 === 'XMAS' || word2 === 'SAMX')
