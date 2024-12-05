@@ -16,31 +16,44 @@ data.split(/\r?\n/).forEach((row) => {
   }
 });
 
-function isInCorectOrder(update: number[]) {
-  console.log('!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!');
-  rules.forEach((rule) => {
+function isInCorrectOrder(update: number[]) {
+  return rules.every((rule) => {
     const firstInd = update.indexOf(rule.lower);
     const secondeInd = update.indexOf(rule.higher);
-    if (firstInd < 0 || secondeInd < 0 || firstInd < secondeInd) {
-    } else {
-      console.log({ update, rule });
-    }
+    return firstInd < 0 || secondeInd < 0 || firstInd < secondeInd;
   });
-  return true;
+}
+
+function toCorrectOrder(update: number[]): number[] {
+  var rulesFiltered = rules.filter((rule) => {
+    return update.includes(rule.lower) && update.includes(rule.higher);
+  });
+  var correctOrder: number[] = [];
+  var foundAll = false;
+  while (!foundAll) {
+    var first = update.find((u) => !rulesFiltered.some((r) => r.higher === u));
+    correctOrder.push(first);
+    update = update.filter((u) => u !== first);
+    var rulesFiltered = rules.filter((rule) => {
+      return update.includes(rule.lower) && update.includes(rule.higher);
+    });
+
+    if (update.length === 1) {
+      correctOrder.push(update[0]);
+      foundAll = true;
+    }
+  }
+  return correctOrder;
 }
 
 function sumMiddleNumbers(arrays: number[][]): number {
-  let totalSum = 0;
-
-  for (const arr of arrays) {
-    const length = arr.length;
-    totalSum += arr[Math.floor(length / 2)];
-  }
-
-  return totalSum;
+  return arrays
+    .map((arr) => arr[Math.floor(arr.length / 2)])
+    .reduce((acc, curr) => acc + curr, 0);
 }
 
-const correct = updates.filter((u) => isInCorectOrder(u));
-// const sum = sumMiddleNumbers(correct);
-// console.log({ sum });
+const inCorrect = updates.filter((u) => !isInCorrectOrder(u));
+const correctOrder = inCorrect.map((u) => toCorrectOrder(u));
+const sum = sumMiddleNumbers(correctOrder);
+console.log({ sum });
 export {};
