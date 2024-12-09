@@ -1,7 +1,3 @@
-class Coord {
-  constructor(public x: number, public y: number) {}
-}
-
 const fs = require('fs');
 const data: string = fs.readFileSync('9/input.txt', 'utf8');
 
