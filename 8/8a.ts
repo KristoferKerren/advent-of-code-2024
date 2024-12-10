@@ -12,7 +12,14 @@ function getMap() {
   return { map, mapMaxX, mapMaxY };
 }
 
-function logMap(map: string[][]) {
+function getValue(map, x, y): number | null {
+  if (x < 0 || x >= map[0].length || y < 0 || y >= map.length) {
+    return null;
+  }
+  return map[y][x];
+}
+
+function logMap(map: number[][]) {
   console.log('Map:');
   for (let y = 0; y < map.length; y++) {
     console.log(
