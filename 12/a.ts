@@ -3,8 +3,13 @@ class Coord {
     public x: number,
     public y: number,
     public value: string,
-    public fences: number
+    public horizontalFences: string[] = [],
+    public verticalFences: string[] = []
   ) {}
+
+  get nbrOfFences() {
+    return this.horizontalFences.length + this.verticalFences.length;
+  }
 }
 
 const fs = require('fs');
@@ -14,13 +19,16 @@ function getMap(fileName: string) {
   const map = data.split(/\r?\n/).map((row, y) => row.split(''));
   const coords: Coord[] = [];
   map.forEach((row, y) =>
-    row.forEach((cell, x) => {
-      const coord = new Coord(x, y, cell, 0);
-      if (map[y][x + 1] !== cell) coord.fences++;
-      if (map[y][x - 1] !== cell) coord.fences++;
-      if (!map[y + 1] || !map[y - 1]) coord.fences++;
-      if (map[y + 1] && map[y + 1][x] !== cell) coord.fences++;
-      if (map[y - 1] && map[y - 1][x] !== cell) coord.fences++;
+    row.forEach((value, x) => {
+      const coord = new Coord(x, y, value);
+      const leftNeighbor = map[y][x - 1];
+      const rightNeighbor = map[y][x + 1];
+      const topNeighbor = map[y - 1] && map[y - 1][x];
+      const bottomNeighbor = map[y + 1] && map[y + 1][x];
+      if (leftNeighbor !== value) coord.verticalFences.push(`${x - 1},${y}`);
+      if (rightNeighbor !== value) coord.verticalFences.push(`${x},${y}`);
+      if (topNeighbor !== value) coord.horizontalFences.push(`${x},${y - 1}`);
+      if (bottomNeighbor !== value) coord.horizontalFences.push(`${x},${y}`);
       coords.push(coord);
     })
   );
@@ -79,19 +87,46 @@ const getFirstRegion = (map: string[][], coords: Coord[]): Coord[] => {
 const getPrice = (fileName: string) => {
   const { map, coords } = getMap(fileName);
   let region = getFirstRegion(map, coords);
-  let sum = 0;
+  let priceSumA = 0;
+  let priceSumB = 0;
   while (region) {
     const area = region.length;
-    const fences = region.reduce((acc, curr) => acc + curr.fences, 0);
-    sum += area * fences;
+    const fences = region.reduce((acc, curr) => acc + curr.nbrOfFences, 0);
+    const horizontalFences = region.map((c) => c.horizontalFences).flat();
+    const verticalFences = region.map((c) => c.verticalFences).flat();
+    const corners = horizontalFences.reduce((acc, hf) => {
+      const [x, y] = hf.split(',').map(Number);
+      let corners = 0;
+      if (verticalFences.includes(`${x - 1},${y}`)) corners++;
+      else if (verticalFences.includes(`${x - 1},${y + 1}`)) corners++;
+      if (verticalFences.includes(`${x},${y}`)) corners++;
+      else if (verticalFences.includes(`${x},${y + 1}`)) corners++;
+      return acc + corners;
+    }, 0);
+    priceSumA += area * fences;
+    priceSumB += area * corners;
     region = getFirstRegion(map, coords);
   }
-  return sum;
+  return { priceSumA, priceSumB };
 };
 
-console.log(getPrice('12/input-test-1.txt'));
-console.log(getPrice('12/input-test-2.txt'));
-console.log(getPrice('12/input-test-3.txt'));
+if (getPrice('12/input-test-1.txt').priceSumA !== 140)
+  console.error('Test 1 failed');
+if (getPrice('12/input-test-2.txt').priceSumA !== 772)
+  console.error('Test 2 failed');
+if (getPrice('12/input-test-3.txt').priceSumA !== 1930)
+  console.error('Test 3 failed');
+if (getPrice('12/input-test-1.txt').priceSumB !== 80)
+  console.error('Test 4 failed');
+if (getPrice('12/input-test-2.txt').priceSumB !== 436)
+  console.error('Test 5 failed');
+if (getPrice('12/input-test-3.txt').priceSumB !== 1206)
+  console.error('Test 6 failed');
+if (getPrice('12/input-test-4.txt').priceSumB !== 236)
+  console.error('Test 7 failed');
+if (getPrice('12/input-test-5.txt').priceSumB !== 368)
+  console.error('Test 8 failed');
+
 console.log(getPrice('12/input.txt'));
 
 export {};
