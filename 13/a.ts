@@ -1,21 +1,17 @@
 class Button {
-  constructor(
-    public deltaX: number,
-    public deltaY: number,
-    public cost: number = 0
-  ) {}
+  constructor(public deltaX: number, public deltaY: number) {}
 }
 
 class ClawMachine {
   constructor(
-    public buttonA: Button = new Button(0, 0, 0),
-    public buttonB: Button = new Button(0, 0, 0),
+    public buttonA: Button = new Button(0, 0),
+    public buttonB: Button = new Button(0, 0),
     public PrizeX: number = 0,
     public PrizeY: number = 0
   ) {}
 
   getTotalCost(buttonAPress: number, buttonBPress: number): number {
-    return buttonAPress * this.buttonA.cost + buttonBPress * this.buttonB.cost;
+    return buttonAPress * 1 + buttonBPress * 3;
   }
 
   get buttonPresses() {
@@ -40,13 +36,22 @@ function getClawMachines(fileName: string, deltaPrice: number = 0) {
   data.split(/\r?\n/).forEach((row, x) => {
     if (row.length > 1) {
       if (row.startsWith('Button A:')) {
-        const [deltaX, deltaY] = row.substring(11).split(', Y+').map(Number);
-        clawMachines.push(new ClawMachine(new Button(deltaX, deltaY, 3)));
+        const [deltaX, deltaY] = row
+          .split('Button A: X+')[1]
+          .split(', Y+')
+          .map(Number);
+        clawMachines.push(new ClawMachine(new Button(deltaX, deltaY)));
       } else if (row.startsWith('Button B:')) {
-        const [deltaX, deltaY] = row.substring(11).split(', Y+').map(Number);
-        clawMachines.at(-1).buttonB = new Button(deltaX, deltaY, 1);
+        const [deltaX, deltaY] = row
+          .split('Button B: X+')[1]
+          .split(', Y+')
+          .map(Number);
+        clawMachines.at(-1).buttonB = new Button(deltaX, deltaY);
       } else if (row.startsWith('Prize:')) {
-        const [PrizeX, PrizeY] = row.substring(9).split(', Y=').map(Number);
+        const [PrizeX, PrizeY] = row
+          .split('Prize: X=')[1]
+          .split(', Y=')
+          .map(Number);
         clawMachines.at(-1).PrizeX = deltaPrice + PrizeX;
         clawMachines.at(-1).PrizeY = deltaPrice + PrizeY;
       }
