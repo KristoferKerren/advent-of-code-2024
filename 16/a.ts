@@ -95,6 +95,7 @@ let allOptions: { curr; steps; visited: Map<string, number> }[] = [
   { curr: { dir: 'E', coord: startCoord }, steps: [], visited: visitedMap },
 ];
 let minScore = 9999999999999;
+let minScorePaths: string[][] = [];
 while (true && allOptions.length) {
   const loopNbr = allOptions.length;
   for (var j = 0; j < loopNbr; j++) {
@@ -104,8 +105,13 @@ while (true && allOptions.length) {
       coords.find((c) => c.type === 'end').toString ===
       _allOption.curr.coord.toString
     ) {
-      minScore = Math.min(minScore, currentScore);
-    } else if (currentScore < minScore) {
+      if (minScore === currentScore) {
+        minScorePaths.push([..._allOption.visited.keys()]);
+      } else if (currentScore < minScore) {
+        minScore = currentScore;
+        minScorePaths = [[..._allOption.visited.keys()]];
+      }
+    } else if (currentScore <= minScore) {
       // Go forward:
       const newCoord = getNewCoord(_allOption.curr.dir, _allOption.curr.coord);
       if (newCoord && !_allOption.visited.has(newCoord.toString)) {
@@ -154,7 +160,7 @@ while (true && allOptions.length) {
     const score = [...a.visited.values()].pop();
     if (
       allOptions.some(
-        (b) => b.visited.has(lastKey) && b.visited.get(lastKey) < score
+        (b) => b.visited.has(lastKey) && b.visited.get(lastKey) < score - 1000
       )
     )
       return false;
@@ -162,6 +168,8 @@ while (true && allOptions.length) {
   });
 }
 
-console.log({ minScore });
+let minScoreCoords = new Set<string>();
+minScorePaths.forEach((m) => m.forEach((mm) => minScoreCoords.add(mm)));
+console.log({ day16a: minScore, day16b: minScoreCoords.size });
 
 export {};
