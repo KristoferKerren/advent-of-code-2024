@@ -1,5 +1,8 @@
 {
   "compilerOptions": {
-    "noImplicitAny": false
+    "noImplicitAny": false,
+    "target": "ES2015", // Set target to ES2015 or higher (ES6+)
+    "lib": ["ES2015", "DOM"], // Include the ES2015 library
+    "downlevelIteration": true // Enable downlevel iteration support
   }
 }
