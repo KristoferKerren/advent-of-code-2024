@@ -31,6 +31,22 @@ namespace AdventOfCode19a {
     return false;
   }
 
+  function joinDuplicatePatterns(
+    potential: { currPatt: string; nbrOfCases: number }[]
+  ): { currPatt: string; nbrOfCases: number }[] {
+    let potentialCopy = [...potential];
+    const newPotential = [];
+    while (potentialCopy.length > 0) {
+      let currPatter = potentialCopy[0].currPatt;
+      let nbrOfCases = potentialCopy
+        .filter((p) => p.currPatt === currPatter)
+        .reduce((acc, a) => acc + a.nbrOfCases, 0);
+      newPotential.push({ currPatt: currPatter, nbrOfCases });
+      potentialCopy = potentialCopy.filter((p) => p.currPatt !== currPatter);
+    }
+    return newPotential;
+  }
+
   export function getNbrOfCombinations(
     pattern: string,
     towels: string[]
@@ -54,16 +70,7 @@ namespace AdventOfCode19a {
             nbrOfCases: current.nbrOfCases,
           });
       });
-      let potentialCopy = [...potential];
-      potential = [];
-      while (potentialCopy.length > 0) {
-        let currPatter = potentialCopy[0].currPatt;
-        let nbrOfCases = potentialCopy
-          .filter((p) => p.currPatt === currPatter)
-          .reduce((acc, a) => acc + a.nbrOfCases, 0);
-        potential.push({ currPatt: currPatter, nbrOfCases });
-        potentialCopy = potentialCopy.filter((p) => p.currPatt !== currPatter);
-      }
+      potential = joinDuplicatePatterns(potential);
     }
     return count;
   }
@@ -72,7 +79,7 @@ namespace AdventOfCode19a {
     const { towels, patterns } = readInput();
     let res19a = 0;
     let res19b = 0;
-    patterns.forEach((pattern, i) => {
+    patterns.forEach((pattern) => {
       const nbrOfComb = getNbrOfCombinations(pattern, towels);
       if (nbrOfComb > 0) res19a++;
       res19b += nbrOfComb;
