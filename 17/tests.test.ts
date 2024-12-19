@@ -2,7 +2,6 @@ const { AdventOfCode17 } = require('./a');
 
 test('Intcode runProgram 1', () => {
   const program = new AdventOfCode17.Program(0, 0, 9, [2, 6]);
-  console.log({ program });
   const expectedFinalProgram = new AdventOfCode17.Program(0, 1, 9);
   AdventOfCode17.runProgram(program);
   expect(program.isEqual(expectedFinalProgram)).toBe(true);
