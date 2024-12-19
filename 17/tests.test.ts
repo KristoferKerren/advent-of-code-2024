@@ -39,3 +39,10 @@ test('Intcode runProgram 6', () => {
   const output = AdventOfCode17.runProgram(program);
   expect(output.join(',')).toBe('4,6,3,5,6,3,5,2,1,0');
 });
+
+test('Intcode runProgram 7', () => {
+  const instructions = [0, 3, 5, 4, 3, 0];
+  const program = new AdventOfCode17.Program(117440, 0, 0, instructions);
+  const output = AdventOfCode17.runProgram(program);
+  expect(output.join(',')).toBe(instructions.join(','));
+});
