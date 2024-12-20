@@ -2,26 +2,30 @@ class Coord {
   constructor(
     public x: number,
     public y: number,
-    public type: 'outerWall' | 'wall' | 'start' | 'end' | 'empty'
+    public type: 'thickWall' | 'wall' | 'start' | 'end' | 'empty'
   ) {}
 
   get toString() {
     return `${this.x},${this.y}`;
+  }
+
+  get copy() {
+    return new Coord(this.x, this.y, this.type);
   }
 }
 
 function getCoord(
   x: number,
   y: number,
-  allVisited: Set<string>,
   coords: Coord[],
   mapMaxX: number,
-  mapMaxY: number
+  mapMaxY: number,
+  allVisited: Set<string> = new Set()
 ): Coord {
   if (x <= 0 || y <= 0 || x >= mapMaxX || y >= mapMaxY) return null;
   if (allVisited.has(`${x},${y}`)) return null;
   const c = coords.find((c) => c.toString === `${x},${y}`);
-  if (c?.type === 'wall' || c?.type === 'outerWall' || c?.type === 'start')
+  if (c?.type === 'wall' || c?.type === 'thickWall' || c?.type === 'start')
     return null;
   if (c?.type === 'end') return c;
   return new Coord(x, y, 'empty');
@@ -39,7 +43,7 @@ function getMap(filename: string) {
     row.split('').forEach((char, x) => {
       if (char === '#') {
         if (x === 0 || y === 0 || x === mapMaxX || y === mapMaxY) {
-          coords.push(new Coord(x, y, 'outerWall'));
+          coords.push(new Coord(x, y, 'thickWall'));
         } else {
           coords.push(new Coord(x, y, 'wall'));
         }
@@ -53,11 +57,40 @@ function getMap(filename: string) {
     });
   });
 
+  coords.forEach((c) => {
+    if (c.type === 'wall') {
+      const left = getCoord(c.x - 1, c.y, coords, mapMaxX, mapMaxY);
+      const right = getCoord(c.x + 1, c.y, coords, mapMaxX, mapMaxY);
+      const up = getCoord(c.x, c.y - 1, coords, mapMaxX, mapMaxY);
+      const down = getCoord(c.x, c.y + 1, coords, mapMaxX, mapMaxY);
+      if ((!left || !right) && (!up || !down)) c.type = 'thickWall';
+    }
+  });
+
   return { coords, mapMaxX, mapMaxY };
 }
 
-function run(fileName: string) {
-  const { coords, mapMaxX, mapMaxY } = getMap(fileName);
+function logMap(coords: Coord[], mapMaxX: number, mapMaxY: number) {
+  console.log('Map:');
+  for (let y = 0; y < mapMaxY; y++) {
+    console.log(
+      new Array(mapMaxX + 1)
+        .fill('.')
+        .map((char, x) => {
+          const c = coords.find((c) => c.toString === `${x},${y}`);
+          if (c?.type === 'wall') return '#';
+          if (c?.type === 'thickWall') return '¤';
+          if (c?.type === 'start') return 'S';
+          if (c?.type === 'end') return 'E';
+          if (c?.type === 'empty') return '.';
+          return char;
+        })
+        .join('')
+    );
+  }
+}
+
+function run(coords: Coord[], mapMaxX: number, mapMaxY: number) {
   const startCoord = coords.find((c) => c.type === 'start');
   let allOptions: { coord; visited: string[] }[] = [
     { coord: startCoord, visited: [startCoord.toString] },
@@ -69,16 +102,16 @@ function run(fileName: string) {
       const option = allOptions.shift();
       // Check if reached end:
       if (option.coord.type === 'end') {
-        return option.visited.length - 1;
+        return option.visited;
       }
       // Go left:
       const leftCoord = getCoord(
         option.coord.x - 1,
         option.coord.y,
-        allVisited,
         coords,
         mapMaxX,
-        mapMaxY
+        mapMaxY,
+        allVisited
       );
       if (leftCoord) {
         allOptions.push({
@@ -90,10 +123,10 @@ function run(fileName: string) {
       const rightCoord = getCoord(
         option.coord.x + 1,
         option.coord.y,
-        allVisited,
         coords,
         mapMaxX,
-        mapMaxY
+        mapMaxY,
+        allVisited
       );
       if (rightCoord) {
         allOptions.push({
@@ -105,10 +138,10 @@ function run(fileName: string) {
       const upCoord = getCoord(
         option.coord.x,
         option.coord.y - 1,
-        allVisited,
         coords,
         mapMaxX,
-        mapMaxY
+        mapMaxY,
+        allVisited
       );
       if (upCoord) {
         allOptions.push({
@@ -120,10 +153,10 @@ function run(fileName: string) {
       const downCoord = getCoord(
         option.coord.x,
         option.coord.y + 1,
-        allVisited,
         coords,
         mapMaxX,
-        mapMaxY
+        mapMaxY,
+        allVisited
       );
       if (downCoord) {
         allOptions.push({
@@ -163,11 +196,37 @@ function run(fileName: string) {
       }
     }
   }
-  return -1;
+  return [];
 }
 
-const fileName = '20/input-test.txt';
-const noCheating = run(fileName);
-console.log({ noCheating });
+function run20a(visited: string[], cheatLimit) {
+  const cheatPaths: number[] = [];
+  for (var i = 0; i < visited.length - 2; i++) {
+    const coord = visited[i];
+    const [currX, currY] = coord.split(',').map(Number);
+    const cheatCoords = [
+      [currX + 2, currY],
+      [currX - 2, currY],
+      [currX, currY + 2],
+      [currX, currY - 2],
+    ];
+    cheatCoords.forEach((cheatCoord) => {
+      const indexOfCheat = visited.findIndex((c) => c === cheatCoord.join(','));
+      if (indexOfCheat > 0 && indexOfCheat - i - 2 >= cheatLimit) {
+        cheatPaths.push(indexOfCheat - i - 2);
+      }
+    });
+  }
+
+  cheatPaths.sort((a, b) => b - a);
+  return cheatPaths.length;
+}
+
+const fileName = '20/input.txt';
+const cheatLimit = 100;
+const { coords, mapMaxX, mapMaxY } = getMap(fileName);
+const visited = run(coords, mapMaxX, mapMaxY);
+
+console.log(run20a(visited, cheatLimit));
 
 export {};
