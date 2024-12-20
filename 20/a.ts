@@ -199,34 +199,40 @@ function run(coords: Coord[], mapMaxX: number, mapMaxY: number) {
   return [];
 }
 
-function run20a(visited: string[], cheatLimit) {
-  const cheatPaths: number[] = [];
+function runWithCheat(
+  visited: string[],
+  maxDistanceOfCheat: number,
+  cheatMinLimit: number
+) {
+  const getDistance = (coord1: string, coord2: string) => {
+    const [x1, y1] = coord1.split(',').map(Number);
+    const [x2, y2] = coord2.split(',').map(Number);
+    return Math.abs(x1 - x2) + Math.abs(y1 - y2);
+  };
+  let cheatPaths: number = 0;
   for (var i = 0; i < visited.length - 2; i++) {
     const coord = visited[i];
-    const [currX, currY] = coord.split(',').map(Number);
-    const cheatCoords = [
-      [currX + 2, currY],
-      [currX - 2, currY],
-      [currX, currY + 2],
-      [currX, currY - 2],
-    ];
+    const cheatCoords = visited.slice(i + 1).filter((v) => {
+      if (v === coord) return false;
+      return getDistance(v, coord) <= maxDistanceOfCheat;
+    });
     cheatCoords.forEach((cheatCoord) => {
-      const indexOfCheat = visited.findIndex((c) => c === cheatCoord.join(','));
-      if (indexOfCheat > 0 && indexOfCheat - i - 2 >= cheatLimit) {
-        cheatPaths.push(indexOfCheat - i - 2);
+      const indexOfCheat = visited.findIndex((c) => c === cheatCoord);
+      const distance = getDistance(coord, cheatCoord);
+      if (indexOfCheat - i - distance >= cheatMinLimit) {
+        cheatPaths++;
       }
     });
   }
 
-  cheatPaths.sort((a, b) => b - a);
-  return cheatPaths.length;
+  return cheatPaths;
 }
 
 const fileName = '20/input.txt';
-const cheatLimit = 100;
 const { coords, mapMaxX, mapMaxY } = getMap(fileName);
 const visited = run(coords, mapMaxX, mapMaxY);
-
-console.log(run20a(visited, cheatLimit));
+const res20a = runWithCheat(visited, 2, 100);
+const res20b = runWithCheat(visited, 20, 100);
+console.log({ res20a, res20b });
 
 export {};
