@@ -32,16 +32,16 @@ namespace AdventOfCode19a {
   }
 
   function joinDuplicatePatterns(
-    potential: { currPatt: string; nbrOfCases: number }[]
-  ): { currPatt: string; nbrOfCases: number }[] {
+    potential: { currPatt: string; nbrOfCombinations: number }[]
+  ): { currPatt: string; nbrOfCombinations: number }[] {
     let potentialCopy = [...potential];
     const newPotential = [];
     while (potentialCopy.length > 0) {
       let currPatter = potentialCopy[0].currPatt;
-      let nbrOfCases = potentialCopy
+      let nbrOfCombinations = potentialCopy
         .filter((p) => p.currPatt === currPatter)
-        .reduce((acc, a) => acc + a.nbrOfCases, 0);
-      newPotential.push({ currPatt: currPatter, nbrOfCases });
+        .reduce((acc, a) => acc + a.nbrOfCombinations, 0);
+      newPotential.push({ currPatt: currPatter, nbrOfCombinations });
       potentialCopy = potentialCopy.filter((p) => p.currPatt !== currPatter);
     }
     return newPotential;
@@ -51,28 +51,28 @@ namespace AdventOfCode19a {
     pattern: string,
     towels: string[]
   ): number {
-    let count = 0;
-    let potential: { currPatt: string; nbrOfCases: number }[] = [];
-    towels.forEach((towel) => {
-      if (pattern.startsWith(towel))
-        potential.push({ currPatt: towel, nbrOfCases: 1 });
-    });
-    while (potential.length > 0) {
-      let current = potential.shift();
+    let nbrOfCombinationsSum = 0;
+    let potential: { currPatt: string; nbrOfCombinations: number }[] = [];
+    let first = true;
+    while (potential.length > 0 || first) {
+      let current = first
+        ? { currPatt: '', nbrOfCombinations: 1 }
+        : potential.shift();
+      first = false;
       if (current.currPatt === pattern) {
-        count += current.nbrOfCases;
+        nbrOfCombinationsSum += current.nbrOfCombinations;
         continue;
       }
       towels.forEach((towel) => {
         if (pattern.startsWith(current.currPatt + towel))
           potential.push({
             currPatt: current.currPatt + towel,
-            nbrOfCases: current.nbrOfCases,
+            nbrOfCombinations: current.nbrOfCombinations,
           });
       });
       potential = joinDuplicatePatterns(potential);
     }
-    return count;
+    return nbrOfCombinationsSum;
   }
 
   function run() {
