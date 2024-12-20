@@ -2,7 +2,7 @@ class Coord {
   constructor(
     public x: number,
     public y: number,
-    public type: 'thickWall' | 'wall' | 'start' | 'end' | 'empty'
+    public type: 'wall' | 'start' | 'end' | 'empty'
   ) {}
 
   get toString() {
@@ -20,13 +20,12 @@ function getCoord(
   coords: Coord[],
   mapMaxX: number,
   mapMaxY: number,
-  allVisited: Set<string> = new Set()
+  visited: string[] = []
 ): Coord {
   if (x <= 0 || y <= 0 || x >= mapMaxX || y >= mapMaxY) return null;
-  if (allVisited.has(`${x},${y}`)) return null;
+  if (visited.some((c) => c === `${x},${y}`)) return null;
   const c = coords.find((c) => c.toString === `${x},${y}`);
-  if (c?.type === 'wall' || c?.type === 'thickWall' || c?.type === 'start')
-    return null;
+  if (c?.type === 'wall' || c?.type === 'start') return null;
   if (c?.type === 'end') return c;
   return new Coord(x, y, 'empty');
 }
@@ -42,11 +41,7 @@ function getMap(filename: string) {
   rows.forEach((row, y) => {
     row.split('').forEach((char, x) => {
       if (char === '#') {
-        if (x === 0 || y === 0 || x === mapMaxX || y === mapMaxY) {
-          coords.push(new Coord(x, y, 'thickWall'));
-        } else {
-          coords.push(new Coord(x, y, 'wall'));
-        }
+        coords.push(new Coord(x, y, 'wall'));
       }
       if (char === 'S') {
         coords.push(new Coord(x, y, 'start'));
@@ -55,16 +50,6 @@ function getMap(filename: string) {
         coords.push(new Coord(x, y, 'end'));
       }
     });
-  });
-
-  coords.forEach((c) => {
-    if (c.type === 'wall') {
-      const left = getCoord(c.x - 1, c.y, coords, mapMaxX, mapMaxY);
-      const right = getCoord(c.x + 1, c.y, coords, mapMaxX, mapMaxY);
-      const up = getCoord(c.x, c.y - 1, coords, mapMaxX, mapMaxY);
-      const down = getCoord(c.x, c.y + 1, coords, mapMaxX, mapMaxY);
-      if ((!left || !right) && (!up || !down)) c.type = 'thickWall';
-    }
   });
 
   return { coords, mapMaxX, mapMaxY };
@@ -79,7 +64,6 @@ function logMap(coords: Coord[], mapMaxX: number, mapMaxY: number) {
         .map((char, x) => {
           const c = coords.find((c) => c.toString === `${x},${y}`);
           if (c?.type === 'wall') return '#';
-          if (c?.type === 'thickWall') return '¤';
           if (c?.type === 'start') return 'S';
           if (c?.type === 'end') return 'E';
           if (c?.type === 'empty') return '.';
@@ -95,8 +79,8 @@ function run(coords: Coord[], mapMaxX: number, mapMaxY: number) {
   let allOptions: { coord; visited: string[] }[] = [
     { coord: startCoord, visited: [startCoord.toString] },
   ];
-  let allVisited: Set<string> = new Set();
   while (allOptions.length) {
+    if (allOptions.length > 1) console.log({ len: allOptions.length });
     const loopNbr = allOptions.length;
     for (var j = 0; j < loopNbr; j++) {
       const option = allOptions.shift();
@@ -111,7 +95,7 @@ function run(coords: Coord[], mapMaxX: number, mapMaxY: number) {
         coords,
         mapMaxX,
         mapMaxY,
-        allVisited
+        option.visited
       );
       if (leftCoord) {
         allOptions.push({
@@ -126,7 +110,7 @@ function run(coords: Coord[], mapMaxX: number, mapMaxY: number) {
         coords,
         mapMaxX,
         mapMaxY,
-        allVisited
+        option.visited
       );
       if (rightCoord) {
         allOptions.push({
@@ -141,7 +125,7 @@ function run(coords: Coord[], mapMaxX: number, mapMaxY: number) {
         coords,
         mapMaxX,
         mapMaxY,
-        allVisited
+        option.visited
       );
       if (upCoord) {
         allOptions.push({
@@ -156,7 +140,7 @@ function run(coords: Coord[], mapMaxX: number, mapMaxY: number) {
         coords,
         mapMaxX,
         mapMaxY,
-        allVisited
+        option.visited
       );
       if (downCoord) {
         allOptions.push({
@@ -165,62 +149,39 @@ function run(coords: Coord[], mapMaxX: number, mapMaxY: number) {
         });
       }
     }
-
-    // Update allVisited:
-    allOptions
-      .map((a) => a.visited)
-      .flat()
-      .forEach((a) => allVisited.add(a));
-
-    // Filter out unecessary items:
-    const allOptionsCopy = [...allOptions.map((a) => ({ ...a }))]; // Deep copy
-    const length = allOptionsCopy.length;
-    allOptions = [];
-    for (var i = 0; i < length; i++) {
-      const a = allOptionsCopy.pop();
-      const nbrOfVisited = a.visited.length;
-      const minNbrVisited = Math.min(
-        ...allOptionsCopy
-          .filter((c) => c.coord.toString === a.coord.toString)
-          .map((b) => b.visited.length),
-        99999
-      );
-      const alreadyExists = allOptions.some(
-        (b) => b.coord.toString === a.coord.toString
-      );
-      if (
-        !alreadyExists &&
-        (nbrOfVisited === minNbrVisited || minNbrVisited === 99999)
-      ) {
-        allOptions.push(a);
-      }
-    }
   }
   return [];
 }
+
+const getDistance = (coord1: string, coord2: string) => {
+  const [x1, y1] = coord1.split(',').map(Number);
+  const [x2, y2] = coord2.split(',').map(Number);
+  return Math.abs(x1 - x2) + Math.abs(y1 - y2);
+};
 
 function runWithCheat(
   visited: string[],
   maxDistanceOfCheat: number,
   cheatMinLimit: number
 ) {
-  const getDistance = (coord1: string, coord2: string) => {
-    const [x1, y1] = coord1.split(',').map(Number);
-    const [x2, y2] = coord2.split(',').map(Number);
-    return Math.abs(x1 - x2) + Math.abs(y1 - y2);
-  };
   let cheatPaths: number = 0;
-  for (var i = 0; i < visited.length - 2; i++) {
+  for (var i = 0; i < visited.length; i++) {
     const coord = visited[i];
-    const cheatCoords = visited.slice(i + 1).filter((v) => {
-      if (v === coord) return false;
+    const minIndexOfCheat = i + cheatMinLimit;
+    const potentialCheatCoords = visited.slice(minIndexOfCheat + 1);
+    if (potentialCheatCoords.length === 0) return cheatPaths;
+    const cheatCoords = potentialCheatCoords.filter((v) => {
       return getDistance(v, coord) <= maxDistanceOfCheat;
     });
     cheatCoords.forEach((cheatCoord) => {
-      const indexOfCheat = visited.findIndex((c) => c === cheatCoord);
-      const distance = getDistance(coord, cheatCoord);
-      if (indexOfCheat - i - distance >= cheatMinLimit) {
-        cheatPaths++;
+      const distance = getDistance(cheatCoord, coord);
+      if (distance <= maxDistanceOfCheat) {
+        const indexOfCheat =
+          minIndexOfCheat +
+          potentialCheatCoords.findIndex((c) => c === cheatCoord);
+        if (indexOfCheat - distance + 1 >= minIndexOfCheat) {
+          cheatPaths++;
+        }
       }
     });
   }
