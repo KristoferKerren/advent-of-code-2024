@@ -32,9 +32,7 @@ namespace AdventOfCode21a {
     dirKeypad.set('A-v', '<v');
     dirKeypad.set('A-<', 'v<<');
     dirKeypad.set('^-<', 'v<');
-    dirKeypad.set('^-v', 'v');
     dirKeypad.set('^->', '>v');
-    dirKeypad.set('>-<', '<<');
     dirKeypad.set('>-v', '<');
     dirKeypad.set('v-<', '<');
     dirKeypad.forEach((value, key) => {
@@ -107,50 +105,99 @@ namespace AdventOfCode21a {
     code: string,
     amountOfDirRobots: number,
     numKeypad: Map<string, string>,
-    dirKeypad: Map<string, string>
+    dirKeypad: Map<string, string>,
+    testThis: string = null
   ) {
     let from = 'A';
-    let previousRobotSteps = code
-      .split('')
-      .map((to) => {
-        let _numRobotSteps = numKeypad.get(`${from}-${to}`) + 'A';
-        from = to;
-        return _numRobotSteps;
-      })
-      .join('');
-    //let dirRobotsPos = new Array(amountOfDirRobots).fill('A');
-    let prevLength = previousRobotSteps.length;
-    // previousRobotSteps = previousRobotSteps
-    //   .split('')
-    //   .filter((c) => c !== 'A')
-    //   .join('');
+    let previousRobotSteps = code.split('').map((to) => {
+      let _numRobotSteps = numKeypad.get(`${from}-${to}`) + 'A';
+      from = to;
+      return _numRobotSteps;
+    });
 
-    for (var i = 0; i < amountOfDirRobots; i++) {
-      console.log({ previousRobotSteps, len: previousRobotSteps.length });
-      let from = 'A';
+    let doubleA = 0;
+
+    for (var i = 1; i <= amountOfDirRobots; i++) {
+      console.log({
+        len: previousRobotSteps.length,
+        previousRobotSteps,
+      });
+
       previousRobotSteps = previousRobotSteps
-        .split('')
-        .map((to) => {
-          let _dirRobotSteps =
-            from === to ? 'A' : dirKeypad.get(`${from}-${to}`) + 'A';
-          from = to;
-          return _dirRobotSteps;
+        .map((chocke) => {
+          return getFromCache(chocke, dirKeypad);
         })
-        .join('');
+        .flat();
+
+      previousRobotSteps.forEach((s) => {
+        if (s === 'A') {
+          s = '';
+          doubleA++;
+        }
+        while (s.includes('<<')) {
+          s = s.replace('<<', '<');
+          doubleA++;
+        }
+        while (s.includes('^^')) {
+          s = s.replace('^^', '^');
+          doubleA++;
+        }
+        while (s.includes('vv')) {
+          s = s.replace('vv', 'v');
+          doubleA++;
+        }
+        while (s.includes('>>')) {
+          s = s.replace('>>', '>');
+          doubleA++;
+        }
+      });
+      previousRobotSteps.filter((s) => s.length);
     }
-    console.log({ previousRobotSteps, len: previousRobotSteps.length });
-    return previousRobotSteps.length;
+    // console.log({
+    //   previousRobotSteps,
+    //   len: previousRobotSteps.length,
+    //   doubleA,
+    // });
+    console.log({ length: previousRobotSteps.length, doubleA });
+    return previousRobotSteps.join('').length;
   }
 
   // 14,30, 70
   // 2: 248684
   // 10: 397725906
+  const cache = new Map<string, string[]>();
+  function getFromCache(key: string, dirKeypad: Map<string, string>): string[] {
+    if (cache.has(key)) {
+      return cache.get(key);
+    }
+    let from = 'A';
+    let steps = key
+      .split('')
+      .map((to) => {
+        let _dirRobotSteps =
+          from === to ? 'A' : dirKeypad.get(`${from}-${to}`) + 'A';
+        from = to;
+        return _dirRobotSteps;
+      })
+      .join('')
+      .match(/.*?A|.+$/g);
+    cache.set(key, steps);
+    return steps;
+  }
 
   export function run() {
     const codes = getInput();
     const { dirKeypad, numKeypad } = getSteps();
     let sum21a = 0;
-    codes.slice(0, 1).forEach((code) => {
+    //runCode(codes[0], 3, numKeypad, dirKeypad);
+    // console.log(getFromCache('<', dirKeypad));
+    // runCode(codes[0], 6, numKeypad, dirKeypad);
+    // console.log(getFromCache('^', dirKeypad));
+    // runCode(codes[0], 3, numKeypad, dirKeypad, '>');
+    // console.log(getFromCache('>', dirKeypad));
+    // runCode(codes[0], 3, numKeypad, dirKeypad, 'v');
+    // console.log(getFromCache('v', dirKeypad));
+    codes.forEach((code) => {
       sum21a +=
         Number(code.slice(0, -1)) * runCode(code, 2, numKeypad, dirKeypad);
     });
