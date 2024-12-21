@@ -105,49 +105,54 @@ namespace AdventOfCode21a {
 
   export function runCode(
     code: string,
+    amountOfDirRobots: number,
     numKeypad: Map<string, string>,
     dirKeypad: Map<string, string>
   ) {
-    const numRobotSteps: string[] = [];
-    const dirRobot1Steps: string[] = [];
-    const dirRobot2Steps: string[] = [];
     let numRobotPos = 'A';
-    let dirRobot1Pos = 'A';
-    let dirRobot2Pos = 'A';
-    code.split('').forEach((c) => {
-      let _numRobotSteps = numKeypad.get(`${numRobotPos}-${c}`) + 'A';
-      numRobotSteps.push(_numRobotSteps);
-      numRobotPos = c;
-      _numRobotSteps.split('').forEach((s) => {
-        let _dirRobot1Steps =
-          dirRobot1Pos === s
-            ? 'A'
-            : dirKeypad.get(`${dirRobot1Pos}-${s}`) + 'A';
-        dirRobot1Steps.push(_dirRobot1Steps);
-        dirRobot1Pos = s;
-        _dirRobot1Steps.split('').forEach((d) => {
-          let _dirRobot2Steps =
-            dirRobot2Pos === d
-              ? 'A'
-              : dirKeypad.get(`${dirRobot2Pos}-${d}`) + 'A';
-          dirRobot2Steps.push(_dirRobot2Steps);
-          dirRobot2Pos = d;
-        });
-      });
-    });
-    return dirRobot2Steps.join('').length;
+    let numRobotSteps: string = code
+      .split('')
+      .map((c) => {
+        let _numRobotSteps = numKeypad.get(`${numRobotPos}-${c}`) + 'A';
+        numRobotPos = c;
+        return _numRobotSteps;
+      })
+      .join('');
+    let previousRobotSteps = numRobotSteps;
+    const dirRobotsSteps: string[] = new Array(amountOfDirRobots).fill('');
+    let dirRobotsPos = new Array(amountOfDirRobots).fill('A');
+    for (var i = 0; i < amountOfDirRobots; i++) {
+      let currRobotSteps: string = previousRobotSteps
+        .split('')
+        .map((c, ind) => {
+          let from = dirRobotsPos[i];
+          let to = c;
+          let _dirRobotSteps =
+            from === to ? 'A' : dirKeypad.get(`${dirRobotsPos[i]}-${c}`) + 'A';
+          dirRobotsPos[i] = c;
+          return _dirRobotSteps;
+        })
+        .join('');
+      dirRobotsSteps[i] = currRobotSteps;
+      previousRobotSteps = currRobotSteps;
+    }
+    return previousRobotSteps.length;
   }
 
   export function run() {
     const codes = getInput();
     const { dirKeypad, numKeypad } = getSteps();
-    let sum = 0;
+    let sum21a = 0;
     codes.forEach((code) => {
-      const amount = runCode(code, numKeypad, dirKeypad);
-      console.log({ code, amount });
-      sum += Number(code.slice(0, -1)) * amount;
+      sum21a +=
+        Number(code.slice(0, -1)) * runCode(code, 2, numKeypad, dirKeypad);
     });
-    console.log(sum);
+    let sum21b = 0;
+    // codes.forEach((code) => {
+    //   sum21b +=
+    //     Number(code.slice(0, -1)) * runCode(code, 25, numKeypad, dirKeypad);
+    // });
+    console.log({ sum21a, sum21b });
   }
 }
 AdventOfCode21a.run();
