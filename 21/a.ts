@@ -109,41 +109,48 @@ namespace AdventOfCode21a {
     numKeypad: Map<string, string>,
     dirKeypad: Map<string, string>
   ) {
-    let numRobotPos = 'A';
-    let numRobotSteps: string = code
+    let from = 'A';
+    let previousRobotSteps = code
       .split('')
-      .map((c) => {
-        let _numRobotSteps = numKeypad.get(`${numRobotPos}-${c}`) + 'A';
-        numRobotPos = c;
+      .map((to) => {
+        let _numRobotSteps = numKeypad.get(`${from}-${to}`) + 'A';
+        from = to;
         return _numRobotSteps;
       })
       .join('');
-    let previousRobotSteps = numRobotSteps;
-    const dirRobotsSteps: string[] = new Array(amountOfDirRobots).fill('');
-    let dirRobotsPos = new Array(amountOfDirRobots).fill('A');
+    //let dirRobotsPos = new Array(amountOfDirRobots).fill('A');
+    let prevLength = previousRobotSteps.length;
+    // previousRobotSteps = previousRobotSteps
+    //   .split('')
+    //   .filter((c) => c !== 'A')
+    //   .join('');
+
     for (var i = 0; i < amountOfDirRobots; i++) {
-      let currRobotSteps: string = previousRobotSteps
+      console.log({ previousRobotSteps, len: previousRobotSteps.length });
+      let from = 'A';
+      previousRobotSteps = previousRobotSteps
         .split('')
-        .map((c, ind) => {
-          let from = dirRobotsPos[i];
-          let to = c;
+        .map((to) => {
           let _dirRobotSteps =
-            from === to ? 'A' : dirKeypad.get(`${dirRobotsPos[i]}-${c}`) + 'A';
-          dirRobotsPos[i] = c;
+            from === to ? 'A' : dirKeypad.get(`${from}-${to}`) + 'A';
+          from = to;
           return _dirRobotSteps;
         })
         .join('');
-      dirRobotsSteps[i] = currRobotSteps;
-      previousRobotSteps = currRobotSteps;
     }
+    console.log({ previousRobotSteps, len: previousRobotSteps.length });
     return previousRobotSteps.length;
   }
+
+  // 14,30, 70
+  // 2: 248684
+  // 10: 397725906
 
   export function run() {
     const codes = getInput();
     const { dirKeypad, numKeypad } = getSteps();
     let sum21a = 0;
-    codes.forEach((code) => {
+    codes.slice(0, 1).forEach((code) => {
       sum21a +=
         Number(code.slice(0, -1)) * runCode(code, 2, numKeypad, dirKeypad);
     });
