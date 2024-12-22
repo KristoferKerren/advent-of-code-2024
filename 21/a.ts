@@ -32,7 +32,7 @@ namespace AdventOfCode21a {
     dirKeypadLeRi.set('A->', 'v');
     dirKeypadLeRi.set('A-v', '<v');
     dirKeypadLeRi.set('A-<', 'v<<');
-    dirKeypadLeRi.set('^-<', '<v');
+    dirKeypadLeRi.set('^-<', 'v<');
     dirKeypadLeRi.set('^->', '>v');
     dirKeypadLeRi.set('>-v', '<');
     dirKeypadLeRi.set('v-<', '<');
@@ -62,13 +62,13 @@ namespace AdventOfCode21a {
     numKeypad.set('A-7', '^^^<<');
     numKeypad.set('A-8', '<^^^');
     numKeypad.set('A-9', '^^^');
-    numKeypad.set('0-1', '^<');
+    numKeypad.set('0-1', '<^');
     numKeypad.set('0-2', '^');
     numKeypad.set('0-3', '>^');
     numKeypad.set('0-4', '^^<');
     numKeypad.set('0-5', '^^');
     numKeypad.set('0-6', '>^^');
-    numKeypad.set('0-7', '^^^<');
+    numKeypad.set('0-7', '<^^^');
     numKeypad.set('0-8', '^^^');
     numKeypad.set('0-9', '>^^^');
     numKeypad.set('1-2', '>');
@@ -114,12 +114,19 @@ namespace AdventOfCode21a {
     return { dirKeypadLeRi, dirKeypadUpDo, numKeypad };
   }
 
+  function getTotalAmount(arr: { amount: number; steps: string }[]) {
+    return arr.reduce((acc, curr) => {
+      return acc + curr.amount * curr.steps.length;
+    }, 0);
+  }
+
   export function runCode(
     code: string,
     amountOfDirRobots: number,
     numKeypad: Map<string, string>,
     dirKeypadLeRi: Map<string, string>,
-    dirKeypadUpDo: Map<string, string>
+    dirKeypadUpDo: Map<string, string>,
+    forceNumRobotSteps: string[] = []
   ) {
     let from = 'A';
     let numRobotSteps = code.split('').map((to) => {
@@ -127,34 +134,33 @@ namespace AdventOfCode21a {
       from = to;
       return _numRobotSteps;
     });
+
+    if (forceNumRobotSteps?.length) {
+      numRobotSteps = forceNumRobotSteps;
+    }
+
     let previousRobotSteps = numRobotSteps.map((s) => {
       return { steps: s, amount: 1 };
     });
 
     for (var i = 1; i <= amountOfDirRobots; i++) {
-      let previousRobotStepsLeRi = previousRobotSteps
+      previousRobotSteps = previousRobotSteps
         .map((chocke) => {
-          return getFromCacheLeRi(chocke.steps, chocke.amount, dirKeypadLeRi);
+          const leriStep = getFromCacheLeRi(
+            chocke.steps,
+            chocke.amount,
+            dirKeypadLeRi
+          );
+          const updoStep = getFromCacheUpDo(
+            chocke.steps,
+            chocke.amount,
+            dirKeypadUpDo
+          );
+          const _leRi = getTotalAmount(leriStep);
+          const _upDo = getTotalAmount(updoStep);
+          return _leRi <= _upDo ? leriStep : updoStep;
         })
         .flat();
-      let previousRobotStepsUpDo = previousRobotSteps
-        .map((chocke) => {
-          return getFromCacheUpDo(chocke.steps, chocke.amount, dirKeypadUpDo);
-        })
-        .flat();
-
-      const leRi = previousRobotStepsLeRi.reduce((acc, curr) => {
-        return acc + curr.amount * curr.steps.length;
-      }, 0);
-      const upDo = previousRobotStepsUpDo.reduce((acc, curr) => {
-        return acc + curr.amount * curr.steps.length;
-      }, 0);
-
-      if (leRi <= upDo) {
-        previousRobotSteps = previousRobotStepsLeRi;
-      } else {
-        previousRobotSteps = previousRobotStepsUpDo;
-      }
 
       previousRobotSteps = previousRobotSteps.reduce((acc, curr) => {
         const existing = acc.find((item) => item.steps === curr.steps);
@@ -166,9 +172,7 @@ namespace AdventOfCode21a {
         return acc;
       }, []);
     }
-    return previousRobotSteps.reduce((acc, curr) => {
-      return acc + curr.amount * curr.steps.length;
-    }, 0);
+    return getTotalAmount(previousRobotSteps);
   }
 
   const cacheLeRi = new Map<string, string[]>();
@@ -230,7 +234,13 @@ namespace AdventOfCode21a {
   export function run() {
     const codes = getInput();
     const { dirKeypadLeRi, dirKeypadUpDo, numKeypad } = getSteps();
-    console.log({ dirKeypadLeRi, dirKeypadUpDo });
+    const numRobots = [
+      ['<^^^A', 'vv>A', '^A', 'vvA'], // 836A
+      ['<^^A', '<A', '>vvA', '>A'], // 540A
+      ['^^^A', 'vA', '<A', 'vv>A'], // 965A
+      ['^^<<A', '^>A', 'vvvA', '>A'], // 480A
+      ['^^^<<A', '>A', '>A', 'vvvA'], // 789A
+    ];
     let sum21a = 0;
     codes.forEach((code) => {
       sum21a +=
@@ -238,15 +248,24 @@ namespace AdventOfCode21a {
         runCode(code, 2, numKeypad, dirKeypadLeRi, dirKeypadUpDo);
     });
     let sum21b = 0;
-    codes.forEach((code) => {
+    codes.forEach((code, ind) => {
       sum21b +=
         Number(code.slice(0, -1)) *
-        runCode(code, 25, numKeypad, dirKeypadLeRi, dirKeypadUpDo);
+        runCode(
+          code,
+          25,
+          numKeypad,
+          dirKeypadLeRi,
+          dirKeypadUpDo,
+          numRobots[ind]
+        );
     });
     console.log({ sum21a, sum21b });
-    //Mitt fel svar 426277361847744
-    //Mitt fel svar 404782946131480
-    // Har ej tests  407521640871536
+    //Mina fel svar:
+    // 426277361847744
+    // 425688640275264
+    // 404782946131480
+    // 407521640871536
   }
 }
 AdventOfCode21a.run();
