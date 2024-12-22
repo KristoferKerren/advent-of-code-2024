@@ -24,19 +24,32 @@ namespace AdventOfCode21a {
 
   //^ (up) < (left) / v (down) / > (right)
   function getSteps() {
-    const dirKeypad: Map<string, string> = new Map<string, string>();
+    const dirKeypadLeRi: Map<string, string> = new Map<string, string>();
+    const dirKeypadUpDo: Map<string, string> = new Map<string, string>();
     const numKeypad: Map<string, string> = new Map<string, string>();
 
-    dirKeypad.set('A-^', '<');
-    dirKeypad.set('A->', 'v');
-    dirKeypad.set('A-v', '<v');
-    dirKeypad.set('A-<', 'v<<');
-    dirKeypad.set('^-<', 'v<');
-    dirKeypad.set('^->', '>v');
-    dirKeypad.set('>-v', '<');
-    dirKeypad.set('v-<', '<');
-    dirKeypad.forEach((value, key) => {
-      dirKeypad.set(getOppositeStartStop(key), getOppositeDir(value));
+    dirKeypadLeRi.set('A-^', '<');
+    dirKeypadLeRi.set('A->', 'v');
+    dirKeypadLeRi.set('A-v', '<v');
+    dirKeypadLeRi.set('A-<', 'v<<');
+    dirKeypadLeRi.set('^-<', '<v');
+    dirKeypadLeRi.set('^->', '>v');
+    dirKeypadLeRi.set('>-v', '<');
+    dirKeypadLeRi.set('v-<', '<');
+    dirKeypadLeRi.forEach((value, key) => {
+      dirKeypadLeRi.set(getOppositeStartStop(key), getOppositeDir(value));
+    });
+
+    dirKeypadUpDo.set('A-^', '<');
+    dirKeypadUpDo.set('A->', 'v');
+    dirKeypadUpDo.set('A-v', 'v<');
+    dirKeypadUpDo.set('A-<', 'v<<');
+    dirKeypadUpDo.set('^-<', 'v<');
+    dirKeypadUpDo.set('^->', 'v>');
+    dirKeypadUpDo.set('>-v', '<');
+    dirKeypadUpDo.set('v-<', '<');
+    dirKeypadUpDo.forEach((value, key) => {
+      dirKeypadUpDo.set(getOppositeStartStop(key), getOppositeDir(value));
     });
 
     numKeypad.set('A-0', '<');
@@ -98,14 +111,15 @@ namespace AdventOfCode21a {
       numKeypad.set(getOppositeStartStop(key), getOppositeDir(value));
     });
 
-    return { dirKeypad, numKeypad };
+    return { dirKeypadLeRi, dirKeypadUpDo, numKeypad };
   }
 
   export function runCode(
     code: string,
     amountOfDirRobots: number,
     numKeypad: Map<string, string>,
-    dirKeypad: Map<string, string>
+    dirKeypadLeRi: Map<string, string>,
+    dirKeypadUpDo: Map<string, string>
   ) {
     let from = 'A';
     let numRobotSteps = code.split('').map((to) => {
@@ -118,11 +132,29 @@ namespace AdventOfCode21a {
     });
 
     for (var i = 1; i <= amountOfDirRobots; i++) {
-      previousRobotSteps = previousRobotSteps
+      let previousRobotStepsLeRi = previousRobotSteps
         .map((chocke) => {
-          return getFromCache(chocke.steps, chocke.amount, dirKeypad);
+          return getFromCacheLeRi(chocke.steps, chocke.amount, dirKeypadLeRi);
         })
         .flat();
+      let previousRobotStepsUpDo = previousRobotSteps
+        .map((chocke) => {
+          return getFromCacheUpDo(chocke.steps, chocke.amount, dirKeypadUpDo);
+        })
+        .flat();
+
+      const leRi = previousRobotStepsLeRi.reduce((acc, curr) => {
+        return acc + curr.amount * curr.steps.length;
+      }, 0);
+      const upDo = previousRobotStepsUpDo.reduce((acc, curr) => {
+        return acc + curr.amount * curr.steps.length;
+      }, 0);
+
+      if (leRi <= upDo) {
+        previousRobotSteps = previousRobotStepsLeRi;
+      } else {
+        previousRobotSteps = previousRobotStepsUpDo;
+      }
 
       previousRobotSteps = previousRobotSteps.reduce((acc, curr) => {
         const existing = acc.find((item) => item.steps === curr.steps);
@@ -139,14 +171,14 @@ namespace AdventOfCode21a {
     }, 0);
   }
 
-  const cache = new Map<string, string[]>();
-  function getFromCache(
+  const cacheLeRi = new Map<string, string[]>();
+  function getFromCacheLeRi(
     key: string,
     amount: number,
-    dirKeypad: Map<string, string>
+    dirKeypadLeRi: Map<string, string>
   ) {
-    if (cache.has(key)) {
-      return cache.get(key).map((s) => {
+    if (cacheLeRi.has(key)) {
+      return cacheLeRi.get(key).map((s) => {
         return { steps: s, amount };
       });
     }
@@ -155,13 +187,41 @@ namespace AdventOfCode21a {
       .split('')
       .map((to) => {
         let _dirRobotSteps =
-          from === to ? 'A' : dirKeypad.get(`${from}-${to}`) + 'A';
+          from === to ? 'A' : dirKeypadLeRi.get(`${from}-${to}`) + 'A';
         from = to;
         return _dirRobotSteps;
       })
       .join('')
       .match(/.*?A|.+$/g);
-    cache.set(key, steps);
+    cacheLeRi.set(key, steps);
+    return steps.map((s) => {
+      return { steps: s, amount };
+    });
+  }
+
+  const cacheUpDo = new Map<string, string[]>();
+  function getFromCacheUpDo(
+    key: string,
+    amount: number,
+    dirKeypadUpDo: Map<string, string>
+  ) {
+    if (cacheUpDo.has(key)) {
+      return cacheUpDo.get(key).map((s) => {
+        return { steps: s, amount };
+      });
+    }
+    let from = 'A';
+    let steps: string[] = key
+      .split('')
+      .map((to) => {
+        let _dirRobotSteps =
+          from === to ? 'A' : dirKeypadUpDo.get(`${from}-${to}`) + 'A';
+        from = to;
+        return _dirRobotSteps;
+      })
+      .join('')
+      .match(/.*?A|.+$/g);
+    cacheUpDo.set(key, steps);
     return steps.map((s) => {
       return { steps: s, amount };
     });
@@ -169,19 +229,24 @@ namespace AdventOfCode21a {
 
   export function run() {
     const codes = getInput();
-    const { dirKeypad, numKeypad } = getSteps();
+    const { dirKeypadLeRi, dirKeypadUpDo, numKeypad } = getSteps();
+    console.log({ dirKeypadLeRi, dirKeypadUpDo });
     let sum21a = 0;
     codes.forEach((code) => {
       sum21a +=
-        Number(code.slice(0, -1)) * runCode(code, 2, numKeypad, dirKeypad);
+        Number(code.slice(0, -1)) *
+        runCode(code, 2, numKeypad, dirKeypadLeRi, dirKeypadUpDo);
     });
     let sum21b = 0;
     codes.forEach((code) => {
       sum21b +=
-        Number(code.slice(0, -1)) * runCode(code, 25, numKeypad, dirKeypad);
+        Number(code.slice(0, -1)) *
+        runCode(code, 25, numKeypad, dirKeypadLeRi, dirKeypadUpDo);
     });
     console.log({ sum21a, sum21b });
     //Mitt fel svar 426277361847744
+    //Mitt fel svar 404782946131480
+    // Har ej tests  407521640871536
   }
 }
 AdventOfCode21a.run();
