@@ -105,73 +105,53 @@ namespace AdventOfCode21a {
     code: string,
     amountOfDirRobots: number,
     numKeypad: Map<string, string>,
-    dirKeypad: Map<string, string>,
-    testThis: string = null
+    dirKeypad: Map<string, string>
   ) {
     let from = 'A';
-    let previousRobotSteps = code.split('').map((to) => {
+    let numRobotSteps = code.split('').map((to) => {
       let _numRobotSteps = numKeypad.get(`${from}-${to}`) + 'A';
       from = to;
       return _numRobotSteps;
     });
-
-    let doubleA = 0;
+    let previousRobotSteps = numRobotSteps.map((s) => {
+      return { steps: s, amount: 1 };
+    });
 
     for (var i = 1; i <= amountOfDirRobots; i++) {
-      console.log({
-        len: previousRobotSteps.length,
-        previousRobotSteps,
-      });
-
       previousRobotSteps = previousRobotSteps
         .map((chocke) => {
-          return getFromCache(chocke, dirKeypad);
+          return getFromCache(chocke.steps, chocke.amount, dirKeypad);
         })
         .flat();
 
-      previousRobotSteps.forEach((s) => {
-        if (s === 'A') {
-          s = '';
-          doubleA++;
+      previousRobotSteps = previousRobotSteps.reduce((acc, curr) => {
+        const existing = acc.find((item) => item.steps === curr.steps);
+        if (existing) {
+          existing.amount += curr.amount;
+        } else {
+          acc.push(curr);
         }
-        while (s.includes('<<')) {
-          s = s.replace('<<', '<');
-          doubleA++;
-        }
-        while (s.includes('^^')) {
-          s = s.replace('^^', '^');
-          doubleA++;
-        }
-        while (s.includes('vv')) {
-          s = s.replace('vv', 'v');
-          doubleA++;
-        }
-        while (s.includes('>>')) {
-          s = s.replace('>>', '>');
-          doubleA++;
-        }
-      });
-      previousRobotSteps.filter((s) => s.length);
+        return acc;
+      }, []);
     }
-    // console.log({
-    //   previousRobotSteps,
-    //   len: previousRobotSteps.length,
-    //   doubleA,
-    // });
-    console.log({ length: previousRobotSteps.length, doubleA });
-    return previousRobotSteps.join('').length;
+    return previousRobotSteps.reduce((acc, curr) => {
+      return acc + curr.amount * curr.steps.length;
+    }, 0);
   }
 
-  // 14,30, 70
-  // 2: 248684
-  // 10: 397725906
   const cache = new Map<string, string[]>();
-  function getFromCache(key: string, dirKeypad: Map<string, string>): string[] {
+  function getFromCache(
+    key: string,
+    amount: number,
+    dirKeypad: Map<string, string>
+  ) {
     if (cache.has(key)) {
-      return cache.get(key);
+      return cache.get(key).map((s) => {
+        return { steps: s, amount };
+      });
     }
     let from = 'A';
-    let steps = key
+    let steps: string[] = key
       .split('')
       .map((to) => {
         let _dirRobotSteps =
@@ -182,31 +162,26 @@ namespace AdventOfCode21a {
       .join('')
       .match(/.*?A|.+$/g);
     cache.set(key, steps);
-    return steps;
+    return steps.map((s) => {
+      return { steps: s, amount };
+    });
   }
 
   export function run() {
     const codes = getInput();
     const { dirKeypad, numKeypad } = getSteps();
     let sum21a = 0;
-    //runCode(codes[0], 3, numKeypad, dirKeypad);
-    // console.log(getFromCache('<', dirKeypad));
-    // runCode(codes[0], 6, numKeypad, dirKeypad);
-    // console.log(getFromCache('^', dirKeypad));
-    // runCode(codes[0], 3, numKeypad, dirKeypad, '>');
-    // console.log(getFromCache('>', dirKeypad));
-    // runCode(codes[0], 3, numKeypad, dirKeypad, 'v');
-    // console.log(getFromCache('v', dirKeypad));
     codes.forEach((code) => {
       sum21a +=
         Number(code.slice(0, -1)) * runCode(code, 2, numKeypad, dirKeypad);
     });
     let sum21b = 0;
-    // codes.forEach((code) => {
-    //   sum21b +=
-    //     Number(code.slice(0, -1)) * runCode(code, 25, numKeypad, dirKeypad);
-    // });
+    codes.forEach((code) => {
+      sum21b +=
+        Number(code.slice(0, -1)) * runCode(code, 25, numKeypad, dirKeypad);
+    });
     console.log({ sum21a, sum21b });
+    //Mitt fel svar 426277361847744
   }
 }
 AdventOfCode21a.run();
