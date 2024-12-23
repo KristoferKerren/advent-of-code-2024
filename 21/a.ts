@@ -24,94 +24,131 @@ namespace AdventOfCode21a {
 
   //^ (up) < (left) / v (down) / > (right)
   function getSteps() {
-    const dirKeypadLeRi: Map<string, string> = new Map<string, string>();
-    const dirKeypadUpDo: Map<string, string> = new Map<string, string>();
-    const numKeypad: Map<string, string> = new Map<string, string>();
+    const dirKeypadOptions1: Map<string, string> = new Map<string, string>();
+    dirKeypadOptions1.set('A-^', '<');
+    dirKeypadOptions1.set('A->', 'v');
+    dirKeypadOptions1.set('A-v', '<v'); //'v<');
+    dirKeypadOptions1.set('A-<', 'v<<');
+    dirKeypadOptions1.set('^-<', 'v<');
+    dirKeypadOptions1.set('^->', '>v'); //'v>');
+    dirKeypadOptions1.set('>-v', '<');
+    dirKeypadOptions1.set('v-<', '<');
+    dirKeypadOptions1.set('^-A', '>');
+    dirKeypadOptions1.set('>-A', '^');
+    dirKeypadOptions1.set('v-A', '^>'); //'>^');
+    dirKeypadOptions1.set('<-A', '>>^');
+    dirKeypadOptions1.set('<-^', '>^');
+    dirKeypadOptions1.set('>-^', '^<'); //'<^');
+    dirKeypadOptions1.set('v->', '>');
+    dirKeypadOptions1.set('<-v', '>');
 
-    dirKeypadLeRi.set('A-^', '<');
-    dirKeypadLeRi.set('A->', 'v');
-    dirKeypadLeRi.set('A-v', '<v');
-    dirKeypadLeRi.set('A-<', 'v<<');
-    dirKeypadLeRi.set('^-<', 'v<');
-    dirKeypadLeRi.set('^->', '>v');
-    dirKeypadLeRi.set('>-v', '<');
-    dirKeypadLeRi.set('v-<', '<');
-    dirKeypadLeRi.forEach((value, key) => {
-      dirKeypadLeRi.set(getOppositeStartStop(key), getOppositeDir(value));
-    });
+    const dirKeypadOptions2: Map<string, string> = new Map<string, string>(
+      dirKeypadOptions1
+    );
+    const dirKeypadOptions3: Map<string, string> = new Map<string, string>(
+      dirKeypadOptions1
+    );
+    const dirKeypadOptions4: Map<string, string> = new Map<string, string>(
+      dirKeypadOptions1
+    );
+    const dirKeypadOptions5: Map<string, string> = new Map<string, string>(
+      dirKeypadOptions1
+    );
+    const dirKeypadOptions6: Map<string, string> = new Map<string, string>(
+      dirKeypadOptions1
+    );
+    const dirKeypadOptions7: Map<string, string> = new Map<string, string>(
+      dirKeypadOptions1
+    );
+    const dirKeypadOptions8: Map<string, string> = new Map<string, string>(
+      dirKeypadOptions1
+    );
+    const dirKeypadOptions9: Map<string, string> = new Map<string, string>(
+      dirKeypadOptions1
+    );
+    const dirKeypadOptions10: Map<string, string> = new Map<string, string>(
+      dirKeypadOptions1
+    );
+    const dirKeypadOptions11: Map<string, string> = new Map<string, string>(
+      dirKeypadOptions1
+    );
+    const dirKeypadOptions12: Map<string, string> = new Map<string, string>(
+      dirKeypadOptions1
+    );
+    const dirKeypadOptions13: Map<string, string> = new Map<string, string>(
+      dirKeypadOptions1
+    );
+    const dirKeypadOptions14: Map<string, string> = new Map<string, string>(
+      dirKeypadOptions1
+    );
+    const dirKeypadOptions15: Map<string, string> = new Map<string, string>(
+      dirKeypadOptions1
+    );
+    const dirKeypadOptions16: Map<string, string> = new Map<string, string>(
+      dirKeypadOptions1
+    );
+    dirKeypadOptions2.set('A-v', 'v<');
+    dirKeypadOptions3.set('^->', 'v>');
+    dirKeypadOptions4.set('v-A', '>^');
+    dirKeypadOptions5.set('>-^', '<^');
 
-    dirKeypadUpDo.set('A-^', '<');
-    dirKeypadUpDo.set('A->', 'v');
-    dirKeypadUpDo.set('A-v', 'v<');
-    dirKeypadUpDo.set('A-<', 'v<<');
-    dirKeypadUpDo.set('^-<', 'v<');
-    dirKeypadUpDo.set('^->', 'v>');
-    dirKeypadUpDo.set('>-v', '<');
-    dirKeypadUpDo.set('v-<', '<');
-    dirKeypadUpDo.forEach((value, key) => {
-      dirKeypadUpDo.set(getOppositeStartStop(key), getOppositeDir(value));
-    });
+    dirKeypadOptions6.set('A-v', 'v<');
+    dirKeypadOptions6.set('^->', 'v>');
 
-    numKeypad.set('A-0', '<');
-    numKeypad.set('A-1', '^<<');
-    numKeypad.set('A-2', '<^');
-    numKeypad.set('A-3', '^');
-    numKeypad.set('A-4', '^^<<');
-    numKeypad.set('A-5', '<^^');
-    numKeypad.set('A-6', '^^');
-    numKeypad.set('A-7', '^^^<<');
-    numKeypad.set('A-8', '<^^^');
-    numKeypad.set('A-9', '^^^');
-    numKeypad.set('0-1', '<^');
-    numKeypad.set('0-2', '^');
-    numKeypad.set('0-3', '>^');
-    numKeypad.set('0-4', '^^<');
-    numKeypad.set('0-5', '^^');
-    numKeypad.set('0-6', '>^^');
-    numKeypad.set('0-7', '<^^^');
-    numKeypad.set('0-8', '^^^');
-    numKeypad.set('0-9', '>^^^');
-    numKeypad.set('1-2', '>');
-    numKeypad.set('1-3', '>>');
-    numKeypad.set('1-4', '^');
-    numKeypad.set('1-5', '>^');
-    numKeypad.set('1-6', '>>^');
-    numKeypad.set('1-7', '^^');
-    numKeypad.set('1-8', '>^^');
-    numKeypad.set('1-9', '>>^^');
-    numKeypad.set('2-3', '>');
-    numKeypad.set('2-4', '<^');
-    numKeypad.set('2-5', '^');
-    numKeypad.set('2-6', '>^');
-    numKeypad.set('2-7', '<^^');
-    numKeypad.set('2-8', '^^');
-    numKeypad.set('2-9', '>^^');
-    numKeypad.set('3-4', '<<^');
-    numKeypad.set('3-5', '<^');
-    numKeypad.set('3-6', '^');
-    numKeypad.set('3-7', '<<^^');
-    numKeypad.set('3-8', '<^^');
-    numKeypad.set('3-9', '^^');
-    numKeypad.set('4-5', '>');
-    numKeypad.set('4-6', '>>');
-    numKeypad.set('4-7', '^');
-    numKeypad.set('4-8', '>^');
-    numKeypad.set('4-9', '>>^');
-    numKeypad.set('5-6', '>');
-    numKeypad.set('5-7', '<^');
-    numKeypad.set('5-8', '^');
-    numKeypad.set('5-9', '>^');
-    numKeypad.set('6-7', '<<^');
-    numKeypad.set('6-8', '<^');
-    numKeypad.set('6-9', '^');
-    numKeypad.set('7-8', '>');
-    numKeypad.set('7-9', '>>');
-    numKeypad.set('8-9', '>');
-    numKeypad.forEach((value, key) => {
-      numKeypad.set(getOppositeStartStop(key), getOppositeDir(value));
-    });
+    dirKeypadOptions7.set('A-v', 'v<');
+    dirKeypadOptions7.set('v-A', '>^');
 
-    return { dirKeypadLeRi, dirKeypadUpDo, numKeypad };
+    dirKeypadOptions8.set('A-v', 'v<');
+    dirKeypadOptions8.set('>-^', '<^');
+
+    dirKeypadOptions9.set('^->', 'v>');
+    dirKeypadOptions9.set('>-^', '<^');
+
+    dirKeypadOptions10.set('^->', 'v>');
+    dirKeypadOptions10.set('v-A', '>^');
+
+    dirKeypadOptions11.set('v-A', '>^');
+    dirKeypadOptions11.set('>-^', '<^');
+
+    dirKeypadOptions12.set('A-v', 'v<');
+    dirKeypadOptions12.set('^->', 'v>');
+    dirKeypadOptions12.set('v-A', '>^');
+
+    dirKeypadOptions13.set('A-v', 'v<');
+    dirKeypadOptions13.set('^->', 'v>');
+    dirKeypadOptions13.set('>-^', '<^');
+
+    dirKeypadOptions14.set('A-v', 'v<');
+    dirKeypadOptions14.set('v-A', '>^');
+    dirKeypadOptions14.set('>-^', '<^');
+
+    dirKeypadOptions15.set('^->', 'v>');
+    dirKeypadOptions15.set('v-A', '>^');
+    dirKeypadOptions15.set('>-^', '<^');
+
+    dirKeypadOptions16.set('A-v', 'v<');
+    dirKeypadOptions16.set('^->', 'v>');
+    dirKeypadOptions16.set('v-A', '>^');
+    dirKeypadOptions16.set('>-^', '<^');
+
+    return [
+      dirKeypadOptions1,
+      dirKeypadOptions2,
+      dirKeypadOptions3,
+      dirKeypadOptions4,
+      dirKeypadOptions5,
+      dirKeypadOptions6,
+      dirKeypadOptions7,
+      dirKeypadOptions8,
+      dirKeypadOptions9,
+      dirKeypadOptions10,
+      dirKeypadOptions11,
+      dirKeypadOptions12,
+      dirKeypadOptions13,
+      dirKeypadOptions14,
+      dirKeypadOptions15,
+      dirKeypadOptions16,
+    ];
   }
 
   function getTotalAmount(arr: { amount: number; steps: string }[]) {
@@ -121,24 +158,11 @@ namespace AdventOfCode21a {
   }
 
   export function runCode(
-    code: string,
     amountOfDirRobots: number,
-    numKeypad: Map<string, string>,
-    dirKeypadLeRi: Map<string, string>,
-    dirKeypadUpDo: Map<string, string>,
-    forceNumRobotSteps: string[] = []
+    dirKeypad: Map<string, string>,
+    numRobotSteps: string[] = []
   ) {
-    let from = 'A';
-    let numRobotSteps = code.split('').map((to) => {
-      let _numRobotSteps = numKeypad.get(`${from}-${to}`) + 'A';
-      from = to;
-      return _numRobotSteps;
-    });
-
-    if (forceNumRobotSteps?.length) {
-      numRobotSteps = forceNumRobotSteps;
-    }
-
+    numRobotSteps = numRobotSteps;
     let previousRobotSteps = numRobotSteps.map((s) => {
       return { steps: s, amount: 1 };
     });
@@ -146,19 +170,7 @@ namespace AdventOfCode21a {
     for (var i = 1; i <= amountOfDirRobots; i++) {
       previousRobotSteps = previousRobotSteps
         .map((chocke) => {
-          const leriStep = getFromCacheLeRi(
-            chocke.steps,
-            chocke.amount,
-            dirKeypadLeRi
-          );
-          const updoStep = getFromCacheUpDo(
-            chocke.steps,
-            chocke.amount,
-            dirKeypadUpDo
-          );
-          const _leRi = getTotalAmount(leriStep);
-          const _upDo = getTotalAmount(updoStep);
-          return _leRi <= _upDo ? leriStep : updoStep;
+          return getFromCacheLeRi(chocke.steps, chocke.amount, dirKeypad);
         })
         .flat();
 
@@ -175,11 +187,11 @@ namespace AdventOfCode21a {
     return getTotalAmount(previousRobotSteps);
   }
 
-  const cacheLeRi = new Map<string, string[]>();
+  let cacheLeRi = new Map<string, string[]>();
   function getFromCacheLeRi(
     key: string,
     amount: number,
-    dirKeypadLeRi: Map<string, string>
+    dirKeypad: Map<string, string>
   ) {
     if (cacheLeRi.has(key)) {
       return cacheLeRi.get(key).map((s) => {
@@ -191,7 +203,7 @@ namespace AdventOfCode21a {
       .split('')
       .map((to) => {
         let _dirRobotSteps =
-          from === to ? 'A' : dirKeypadLeRi.get(`${from}-${to}`) + 'A';
+          from === to ? 'A' : dirKeypad.get(`${from}-${to}`) + 'A';
         from = to;
         return _dirRobotSteps;
       })
@@ -203,69 +215,80 @@ namespace AdventOfCode21a {
     });
   }
 
-  const cacheUpDo = new Map<string, string[]>();
-  function getFromCacheUpDo(
-    key: string,
-    amount: number,
-    dirKeypadUpDo: Map<string, string>
-  ) {
-    if (cacheUpDo.has(key)) {
-      return cacheUpDo.get(key).map((s) => {
-        return { steps: s, amount };
-      });
-    }
-    let from = 'A';
-    let steps: string[] = key
-      .split('')
-      .map((to) => {
-        let _dirRobotSteps =
-          from === to ? 'A' : dirKeypadUpDo.get(`${from}-${to}`) + 'A';
-        from = to;
-        return _dirRobotSteps;
-      })
-      .join('')
-      .match(/.*?A|.+$/g);
-    cacheUpDo.set(key, steps);
-    return steps.map((s) => {
-      return { steps: s, amount };
-    });
-  }
-
   export function run() {
     const codes = getInput();
-    const { dirKeypadLeRi, dirKeypadUpDo, numKeypad } = getSteps();
-    const numRobots = [
-      ['<^^^A', 'vv>A', '^A', 'vvA'], // 836A
-      ['<^^A', '<A', '>vvA', '>A'], // 540A
-      ['^^^A', 'vA', '<A', 'vv>A'], // 965A
-      ['^^<<A', '^>A', 'vvvA', '>A'], // 480A
-      ['^^^<<A', '>A', '>A', 'vvvA'], // 789A
+    const dirKeypads = getSteps();
+    const numRobotSteps = [
+      // 836A
+      [
+        ['<^^^A', 'vv>A', '^A', 'vvA'],
+        ['<^^^A', '>vvA', '^A', 'vvA'],
+        ['^^^<A', 'vv>A', '^A', 'vvA'],
+        ['^^^<A', '>vvA', '^A', 'vvA'],
+      ],
+      // 540A
+      [
+        ['<^^A', '<A', '>vvA', '>A'],
+        ['^^<A', '<A', '>vvA', '>A'],
+      ],
+      // 965A
+      [
+        ['^^^A', 'vA', '<A', 'vv>A'],
+        ['^^^A', 'vA', '<A', '>vvA'],
+      ],
+      // 480A
+      [
+        ['^^<<A', '>^A', 'vvvA', '>A'],
+        ['<^^<A', '>^A', 'vvvA', '>A'],
+        ['^^<<A', '^>A', 'vvvA', '>A'],
+      ],
+      // 789A
+      [
+        ['^^^<<A', '>A', '>A', 'vvvA'],
+        ['<^^^<A', '>A', '>A', 'vvvA'],
+      ],
     ];
-    let sum21a = 0;
-    codes.forEach((code) => {
-      sum21a +=
-        Number(code.slice(0, -1)) *
-        runCode(code, 2, numKeypad, dirKeypadLeRi, dirKeypadUpDo);
+    const minClicks21a = numRobotSteps.map((steps) => {
+      const buttonClicks = steps.map((s) => {
+        return runCode(2, dirKeypads[0], s);
+      });
+      return Math.min(...buttonClicks);
     });
-    let sum21b = 0;
-    codes.forEach((code, ind) => {
-      sum21b +=
-        Number(code.slice(0, -1)) *
-        runCode(
-          code,
-          25,
-          numKeypad,
-          dirKeypadLeRi,
-          dirKeypadUpDo,
-          numRobots[ind]
-        );
+    let sum21a = minClicks21a.reduce(
+      (acc, curr, ind) => acc + Number(codes[ind].slice(0, -1)) * curr,
+      0
+    );
+
+    const minClicks21b = numRobotSteps.map((steps) => {
+      let _minClicks21b: number = 999999999999999;
+      dirKeypads.forEach((dirKeypad) => {
+        const buttonClicks = steps.map((s) => {
+          const runCodeRes = runCode(25, dirKeypad, s);
+          cacheLeRi = new Map<string, string[]>(); // Clear cache
+          return runCodeRes;
+        });
+        _minClicks21b = Math.min(_minClicks21b, Math.min(...buttonClicks));
+      });
+      return _minClicks21b;
     });
+    console.log({ minClicks21b });
+    let sum21b = minClicks21b.reduce(
+      (acc, curr, ind) => acc + Number(codes[ind].slice(0, -1)) * curr,
+      0
+    );
+
     console.log({ sum21a, sum21b });
     //Mina fel svar:
     // 426277361847744
     // 425688640275264
     // 404782946131480
     // 407521640871536
+    // 364644222998880
+    // 364485993501600
+    // 361504925903280
+    // 361346696406000
+    // 349738773993670
+    // 307055584161760
   }
 }
 AdventOfCode21a.run();
