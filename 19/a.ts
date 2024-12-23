@@ -75,7 +75,7 @@ namespace AdventOfCode19a {
     return nbrOfCombinationsSum;
   }
 
-  function run() {
+  export function run() {
     const { towels, patterns } = readInput();
     let res19a = 0;
     let res19b = 0;
@@ -86,8 +86,8 @@ namespace AdventOfCode19a {
     });
     console.log({ res19a, res19b });
   }
-
-  run();
 }
+
+AdventOfCode19a.run();
 
 export { AdventOfCode19a };

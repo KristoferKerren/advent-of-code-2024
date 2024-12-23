@@ -104,10 +104,9 @@ namespace AdventOfCode17 {
     }
     return output;
   }
-
-  const instructions = [2, 4, 1, 1, 7, 5, 4, 7, 1, 4, 0, 3, 5, 5, 3, 0];
-  const program = new Program(30553366, 0, 0, instructions);
-  console.log(runProgram(program).join(','));
 }
 
+const instructions = [2, 4, 1, 1, 7, 5, 4, 7, 1, 4, 0, 3, 5, 5, 3, 0];
+const program = new AdventOfCode17.Program(30553366, 0, 0, instructions);
+console.log(AdventOfCode17.runProgram(program).join(','));
 export { AdventOfCode17 };
