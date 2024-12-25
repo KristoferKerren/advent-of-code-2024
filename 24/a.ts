@@ -10,15 +10,15 @@ namespace AdventOfCode24 {
         wires.set(wire, value === '1');
       } else if (row.includes('->')) {
         const values = row.split(' ');
-        wireConnections.push([values[0], values[1], values[2], values.at(-1)]);
+        wireConnections.push([values[0], values[1], values[2], values[4]]);
       }
     });
     return { wires, wireConnections };
   }
 
-  function getResultOfWiresStartingWith(start: string): number {
+  function getResultOfWiresStartingWithZ(): number {
     const _wires = Array.from(wires.entries()).filter(([key, value]) =>
-      key.startsWith(start)
+      key.startsWith('z')
     );
     const _wiresOrdered = _wires
       .sort((a, b) => b[0].localeCompare(a[0]))
@@ -27,7 +27,7 @@ namespace AdventOfCode24 {
     return parseInt(_wiresOrdered, 2);
   }
 
-  function getXYZWireResults(wires: Map<string, boolean>) {
+  function runWiresProgram(wires: Map<string, boolean>) {
     let allFound = false;
     while (!allFound) {
       allFound = true;
@@ -46,49 +46,77 @@ namespace AdventOfCode24 {
         }
       });
     }
-    const xWires = getResultOfWiresStartingWith('x');
-    const yWires = getResultOfWiresStartingWith('y');
-    const zWires = getResultOfWiresStartingWith('z');
-    return { xWires, yWires, zWires };
   }
 
-  const { wires, wireConnections } = getInput('24/input.txt');
-  const { xWires, yWires, zWires } = getXYZWireResults(wires);
-  console.log({ res24a: zWires });
-
-  const wiresNotXAndY = Array.from(wires.entries())
-    .filter(([key]) => !key.startsWith('x') && !key.startsWith('y'))
-    .map(([key, value]) => key);
-  console.log({ wiresNotXAndY });
-  for (var i1 = 0; i1 < wiresNotXAndY.length; i1++) {
-    console.log(i1);
-    for (var i2 = i1 + 1; i2 < wiresNotXAndY.length; i2++) {
-      console.log(i2);
-      for (var i3 = i2 + 1; i3 < wiresNotXAndY.length; i3++) {
-        console.log(i3);
-        for (var i4 = i3 + 1; i4 < wiresNotXAndY.length; i4++) {
-          console.log(i4);
-          for (var i5 = i4 + 1; i5 < wiresNotXAndY.length; i5++) {
-            console.log(i5);
-            for (var i6 = i5 + 1; i6 < wiresNotXAndY.length; i6++) {
-              console.log(i6);
-              for (var i7 = i6 + 1; i7 < wiresNotXAndY.length; i7++) {
-                console.log(i7);
-                for (var i8 = i7 + 1; i8 < wiresNotXAndY.length; i8++) {
-                  console.log(i8);
-                }
-              }
-            }
-          }
-        }
-      }
+  const isFaulty = (connection: string[]) => {
+    const isZButNotXor =
+      connection[1] !== 'XOR' &&
+      connection[3].startsWith('z') &&
+      connection[3] !== lastZ;
+    const isXORButNotXYZ =
+      connection[1] === 'XOR' &&
+      !connection[3].startsWith('z') &&
+      !connection[0].startsWith('x') &&
+      !connection[0].startsWith('y') &&
+      !connection[2].startsWith('x') &&
+      !connection[2].startsWith('y');
+    if (isZButNotXor || isXORButNotXYZ) {
+      return true;
     }
-  }
+    const isFirstXOrY =
+      (connection[0] === firstX || connection[0] === firstY) &&
+      (connection[2] === firstX || connection[2] === firstY);
+    if (isFirstXOrY) {
+      return false;
+    }
+    const isXORAndXYButOutputIsNotXORInput =
+      connection[1] === 'XOR' &&
+      (connection[0].startsWith('x') || connection[0].startsWith('y')) &&
+      (connection[2].startsWith('x') || connection[2].startsWith('y')) &&
+      !wireConnections.some(
+        (wc) =>
+          wc[1] === 'XOR' &&
+          (wc[0] === connection[3] || wc[2] === connection[3])
+      );
+    const isAndButOutputIsNotORInput =
+      connection[1] === 'AND' &&
+      !wireConnections.some(
+        (wc) =>
+          wc[1] === 'OR' && (wc[0] === connection[3] || wc[2] === connection[3])
+      );
+    if (isXORAndXYButOutputIsNotXORInput || isAndButOutputIsNotORInput) {
+      return true;
+    }
+    return false;
+  };
+  const { wires, wireConnections } = getInput('24/input.txt');
+  runWiresProgram(wires);
+  const lastZ = wireConnections
+    .map((w) => w[3])
+    .filter((w) => w.startsWith('z'))
+    .sort()
+    .at(-1);
+  const firstX = wireConnections
+    .map((w) => [w[0], w[1]])
+    .flat()
+    .filter((w) => w.startsWith('x'))
+    .sort()
+    .at(0);
+  const firstY = wireConnections
+    .map((w) => [w[0], w[1]])
+    .flat()
+    .filter((w) => w.startsWith('y'))
+    .sort()
+    .at(0);
 
-  const sum = xWires + yWires;
+  const res24a = getResultOfWiresStartingWithZ();
+  const res24b = wireConnections
+    .filter(isFaulty)
+    .map((c) => c[3])
+    .sort()
+    .join(',');
 
-  console.log({ xWires, yWires, sum, zWires });
-  console.log({ wires });
+  console.log({ res24a, res24b });
 }
 
 export { AdventOfCode24 };
